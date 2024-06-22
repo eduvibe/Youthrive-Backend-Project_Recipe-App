@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { register, login } = require('../controllers/userController');
+const { favoriteRecipe, unfavoriteRecipe } = require('../controllers/userController');
+const authMiddleware = require('../middlewares/authMiddleware');
 
-router.post('/register', register);
-router.post('/login', login);
+router.post('/favorite/:recipeId', authMiddleware, favoriteRecipe);
+router.delete('/unfavorite/:recipeId', authMiddleware, unfavoriteRecipe);
 
 module.exports = router;

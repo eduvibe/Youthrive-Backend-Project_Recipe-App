@@ -1,103 +1,60 @@
 const Recipe = require('../models/Recipe');
 
-const createRecipe = async (req, res) => {
-  try {
-    const recipe = new Recipe({ ...req.body, author: req.user._id });
-    await recipe.save();
-    res.status(201).send(recipe);
-  } catch (err) {
-    res.status(400).send(err);
-  }
-};
-
 const getRecipes = async (req, res) => {
-  try {
-    const recipes = await Recipe.find().populate('author', 'username email');
-    res.send(recipes);
-  } catch (err) {
-    res.status(500).send(err);
-  }
+    try {
+        const recipes = await Recipe.find();
+        res.send(recipes);
+    } catch (error) {
+        res.status(500).send({ message: 'Error fetching recipes', error });
+    }
 };
 
 const getRecipeById = async (req, res) => {
-  try {
-    const recipe = await Recipe.findById(req.params.id).populate('author', 'username email');
-    if (!recipe) {
-      return res.status(404).send({ error: 'Recipe not found' });
+    try {
+        const recipe = await Recipe.findById(req.params.id);
+        if (!recipe) {
+            return res.status(404).send({ message: 'Recipe not found' });
+        }
+        res.send(recipe);
+    } catch (error) {
+        res.status(500).send({ message: 'Error fetching recipe', error });
     }
-    res.send(recipe);
-  } catch (err) {
-    res.status(500).send(err);
-  }
+};
+
+const createRecipe = async (req, res) => {
+    try {
+        const { title, ingredients, instructions, tags } = req.body;
+        const recipe = new Recipe({ title, ingredients, instructions, tags, author: req.user.id });
+        await recipe.save();
+        res.status(201).send({ message: 'Recipe created successfully', recipe });
+    } catch (error) {
+        res.status(500).send({ message: 'Error creating recipe', error });
+    }
 };
 
 const updateRecipe = async (req, res) => {
-  try {
-    const recipe = await Recipe.findOneAndUpdate(
-      { _id: req.params.id, author: req.user._id },
-      req.body,
-      { new: true, runValidators: true }
-    );
-    if (!recipe) {
-      return res.status(404).send({ error: 'Recipe not found or not authorized' });
+    try {
+        const { title, ingredients, instructions, tags } = req.body;
+        const recipe = await Recipe.findByIdAndUpdate(req.params.id, { title, ingredients, instructions, tags }, { new: true });
+        if (!recipe) {
+            return res.status(404).send({ message: 'Recipe not found' });
+        }
+        res.send({ message: 'Recipe updated successfully', recipe });
+    } catch (error) {
+        res.status(500).send({ message: 'Error updating recipe', error });
     }
-    res.send(recipe);
-  } catch (err) {
-    res.status(400).send(err);
-  }
 };
 
 const deleteRecipe = async (req, res) => {
-  try {
-    const recipe = await Recipe.findOneAndDelete({ _id: req.params.id, author: req.user._id });
-    if (!recipe) {
-      return res.status(404).send({ error: 'Recipe not found or not authorized' });
-    }
-    res.send(recipe);
-  } catch (err) {
-    res.status(500).send(err);
-  }
-};
-
-const favoriteRecipe = async (req, res) => {
-  try {
-    const recipe = await Recipe.findById(req.params.id);
-    if (!recipe) {
-      return res.status(404).send({ error: 'Recipe not found' });
-    }
-    if (!recipe.favorited_by.includes(req.user._id)) {
-      recipe.favorited_by.push(req.user._id);
-      await recipe.save();
-    }
-    res.send(recipe);
-  } catch (err) {
-    res.status(500).send(err);
-  }
-};
-
-
-const unfavoriteRecipe = async (req, res) => {
     try {
-      const recipe = await Recipe.findById(req.params.id);
-      if (!recipe) {
-        return res.status(404).send({ error: 'Recipe not found' });
-      }
-      recipe.favorited_by = recipe.favorited_by.filter(
-        (userId) => !userId.equals(req.user._id)
-      );
-      await recipe.save();
-      res.send(recipe);
-    } catch (err) {
-      res.status(500).send(err);
+        const recipe = await Recipe.findByIdAndDelete(req.params.id);
+        if (!recipe) {
+            return res.status(404).send({ message: 'Recipe not found' });
+        }
+        res.send({ message: 'Recipe deleted successfully' });
+    } catch (error) {
+        res.status(500).send({ message: 'Error deleting recipe', error });
     }
-  };
-  
-  module.exports = {
-    createRecipe,
-    getRecipes,
-    getRecipeById,
-    updateRecipe,
-    deleteRecipe,
-    favoriteRecipe,
-    unfavoriteRecipe,
-  };
+};
+
+module.exports = { getRecipes, getRecipeById, createRecipe, updateRecipe, deleteRecipe };
