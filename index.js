@@ -6,13 +6,13 @@ const userRoutes = require('./routes/userRoutes');
 
 const app = express();
 
-// Connect Database
+// connection to  database
 connectDB();
 
-// Init Middleware
+// initialize middleware
 app.use(express.json());
 
-// Define Routes
+// my Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/recipes', recipeRoutes);
 app.use('/api/users', userRoutes);
