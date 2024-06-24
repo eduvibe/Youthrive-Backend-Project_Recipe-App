@@ -5,7 +5,7 @@ const config = require('../config/config');
 const authMiddleware = async (req, res, next) => {
     const token = req.header('Authorization');
     if (!token) {
-        return res.status(401).send({ message: 'Access denied. No token provided.' });
+        return res.status(401).send({ message: 'Access denied. No access key provided' });
     }
     try {
         const decoded = jwt.decode(token, config.jwtSecret);

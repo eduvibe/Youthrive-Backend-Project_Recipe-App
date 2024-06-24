@@ -6,8 +6,10 @@ const recipeSchema = new mongoose.Schema({
     ingredients: { type: String, required: true },
     instructions: { type: String, required: true },
     author: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    tags: [String],
-    created_at: { type: Date, default: Date.now }
-});
-
+    categories: [{ type: String }], 
+    tags: [{ type: String }], 
+    created_at: { type: Date, default: Date.now },
+  });
+  
+  
 module.exports = mongoose.model('Recipe', recipeSchema);

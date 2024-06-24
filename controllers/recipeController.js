@@ -2,7 +2,7 @@ const Recipe = require('../models/Recipe');
 
 const getRecipes = async (req, res) => {
     try {
-        const recipes = await Recipe.find();
+        const recipes = await Recipe.find().populate('author', 'username');
         res.send(recipes);
     } catch (error) {
         res.status(500).send({ message: 'Error fetching recipes', error });
@@ -11,9 +11,9 @@ const getRecipes = async (req, res) => {
 
 const getRecipeById = async (req, res) => {
     try {
-        const recipe = await Recipe.findById(req.params.id);
+        const recipe = await Recipe.findById(req.params.id).populate('author', 'username');
         if (!recipe) {
-            return res.status(404).send({ message: 'Recipe not found' });
+            return res.status(404).send({ message: 'Recipe Id not found, Try again' });
         }
         res.send(recipe);
     } catch (error) {
@@ -23,25 +23,27 @@ const getRecipeById = async (req, res) => {
 
 const createRecipe = async (req, res) => {
     try {
-        const { title, ingredients, instructions, tags } = req.body;
-        const recipe = new Recipe({ title, ingredients, instructions, tags, author: req.user.id });
+        const { title, ingredients, instructions, categories, tags } = req.body;
+        const recipe = new Recipe(
+        { title, ingredients, instructions, categories, tags, author: req.user.id });
         await recipe.save();
         res.status(201).send({ message: 'Recipe created successfully', recipe });
     } catch (error) {
-        res.status(500).send({ message: 'Error creating recipe', error });
+        res.status(500).send({ message: 'Could not create recipe', error });
     }
 };
 
 const updateRecipe = async (req, res) => {
     try {
-        const { title, ingredients, instructions, tags } = req.body;
-        const recipe = await Recipe.findByIdAndUpdate(req.params.id, { title, ingredients, instructions, tags }, { new: true });
+        const { title, ingredients, instructions, categories, tags } = req.body;
+        const recipe = await Recipe.findByIdAndUpdate(req.params.id, 
+        { title, ingredients, instructions, categories, tags }, { new: true });
         if (!recipe) {
-            return res.status(404).send({ message: 'Recipe not found' });
+            return res.status(404).send({ message: 'Recipe was not found' });
         }
-        res.send({ message: 'Recipe updated successfully', recipe });
+        res.send({ message: 'Recipe has been updated successfully', recipe });
     } catch (error) {
-        res.status(500).send({ message: 'Error updating recipe', error });
+        res.status(500).send({ message: 'unable to update recipe', error });
     }
 };
 
